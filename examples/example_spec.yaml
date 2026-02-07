@@ -1,0 +1,9 @@
+sheet2panel:
+  exp1: I
+  exp2: J
+  exp3: K
+
+layout: |
+  IIJJ
+  KKKK
+  0000
