@@ -1,9 +1,35 @@
 figure.facecolor: white
-axes.spines.top: False
-axes.spines.right: False
-axes.titleweight: bold
-axes.labelsize: 10
-axes.titlesize: 11
-lines.linewidth: 2
-font.size: 10
-savefig.transparent: False
+# FONT TYPES
+font.family : sans-serif
+# font.sans-serif :  Arial, DejaVu Sans, Bitstream Vera Sans, sans-serif
+
+# Make sure the text is rendered as <text> rather than <paths>
+svg.fonttype : none
+# Optional: Add other defaults for nicer SVGs/Inkscape compatibility
+font.family : DejaVu Sans
+svg.image_embedding_threshold : 5KB  # Embed small images as SVG (faster load)
+savefig.bbox : tight
+savefig.pad_inches : 0.1
+
+# FONT SIZES
+font.size : 28
+axes.titlesize : 24
+axes.labelsize : 20
+xtick.labelsize : 16
+ytick.labelsize : 16
+legend.fontsize : 14
+
+# LINE PROPERTIES
+lines.linewidth : 3
+lines.markersize : 10
+
+# FIGURE SIZE
+figure.figsize : 640, 480
+figure.dpi : 150
+savefig.dpi : 200
+
+# GRID
+# axes.grid : True
+# grid.alpha : 0.7
+# grid.linestyle : --
+# grid.linewidth : 0.6
