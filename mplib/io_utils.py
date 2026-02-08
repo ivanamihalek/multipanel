@@ -63,7 +63,7 @@ def load_plot_spec(path: Path, ) -> PlotSpec:
     # Force string keys/values.
     sheet2panel: Mapping[str, str] = {str(k): str(v) for k, v in sheet2panel_raw.items()}
 
-    layout_rows = _normalize_layout(layout_value=data["layout"], )
+    layout_rows = _normalize_layout(layout_value=data["layout"])
 
     return PlotSpec(sheet2panel=sheet2panel, layout_rows=layout_rows, )
 
@@ -74,7 +74,7 @@ def list_xlsx_sheet_names(xlsx_path: Path, ) -> Set[str]:
     return set(xl.sheet_names)
 
 
-def load_sheet_dataframe(xlsx_path: Path, sheet_name: str, ) -> pd.DataFrame:
+def load_sheet_dataframe(xlsx_path: Path, sheet_name: str) -> pd.DataFrame:
     """Loads a sheet as a DataFrame.
 
     Expected minimal columns for the simple default plot:
@@ -88,4 +88,4 @@ def load_sheet_dataframe(xlsx_path: Path, sheet_name: str, ) -> pd.DataFrame:
     Returns:
       DataFrame for that sheet.
     """
-    return pd.read_excel(xlsx_path, sheet_name=sheet_name, )
+    return pd.read_excel(xlsx_path, sheet_name=sheet_name)

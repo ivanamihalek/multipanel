@@ -103,7 +103,8 @@ def _plot_default_xy(ax: plt.Axes, df: pd.DataFrame, title: str | None) -> None:
 
 def build_figure_from_spec(xlsx_path: Path, spec: PlotSpec, ) -> matplotlib.figure.Figure:
     """Builds the matplotlib Figure based on the YAML spec."""
-    fig = plt.figure(figsize=(10, 6), constrained_layout=True, )
+    # we expect that the main styling options were already applier though mplstyle, for example
+    fig = plt.figure()
 
     # IMPORTANT: pass a multiline string (avoids the 1D-list issue).
     mosaic = "\n".join(spec.layout_rows)

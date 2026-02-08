@@ -1,3 +1,14 @@
+# FIGURE SIZE
+figure.figsize : 640, 480
+figure.dpi : 150
+savefig.dpi : 200
+figure.constrained_layout : True
+# Set Spacing (equivalent to gridspec_kw wspace/hspace)
+# Note: When constrained_layout is True, we use these specific keys
+# Values are fractions of the average axes width/height
+figure.constrained_layout.wspace : 0.1
+figure.constrained_layout.hspace : 0.3
+
 figure.facecolor: white
 # FONT TYPES
 font.family : sans-serif
@@ -22,11 +33,6 @@ legend.fontsize : 14
 # LINE PROPERTIES
 lines.linewidth : 3
 lines.markersize : 10
-
-# FIGURE SIZE
-figure.figsize : 640, 480
-figure.dpi : 150
-savefig.dpi : 200
 
 # GRID
 # axes.grid : True

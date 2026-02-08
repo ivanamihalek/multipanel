@@ -17,9 +17,9 @@ def parse_args() -> argparse.Namespace:
     """Parses CLI arguments."""
     parser = argparse.ArgumentParser(description=("Create a multi-panel SVG using matplotlib subplot_mosaic "
                                                   "from an XLSX workbook and a YAML specification."), )
-    parser.add_argument("--xlsx", required=True, type=Path, help="Path to input XLSX workbook.", )
-    parser.add_argument("--yaml", required=True, type=Path, help="Path to YAML specification file.", )
-    parser.add_argument("--out", required=True, type=Path, help="Path to output SVG file.", )
+    parser.add_argument("-x", "--xlsx", required=True, type=Path, help="Path to input XLSX workbook.", )
+    parser.add_argument("-y", "--yaml", required=True, type=Path, help="Path to YAML specification file.", )
+    parser.add_argument("-o", "--out", required=True, type=Path, help="Path to output SVG file.", )
     return parser.parse_args()
 
 
@@ -29,11 +29,11 @@ def apply_style() -> None:
     if style_path.exists():
         plt.style.use(str(style_path))
     else:
-        raise FileNotFoundError(f"Expected style file next to script: {style_path}")
+        raise FileNotFoundError(f"Expected matplotlib style file next to script: {style_path}")
 
 
 def main() -> None:
-    """Program entry point."""
+
     args = parse_args()
     apply_style()
 
