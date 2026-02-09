@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
 from typing import List, Dict, Union, Any, Optional
@@ -84,19 +86,29 @@ def create_mosaic_figure(layout: List[List[str]], data_map: Dict[
 
     plt.show()
 
+def apply_style() -> None:
+    """Applies matplotlib style from multi.mplstyle next to this script."""
+    style_path = Path(__file__).resolve().parent / "multi.mplstyle"
+    if style_path.exists():
+        plt.style.use(str(style_path))
+    else:
+        raise FileNotFoundError(f"Expected matplotlib style file next to script: {style_path}")
 
 def main() -> None:
-    # plt.style.use("../multi.mplstyle")
+
+    apply_style()
     x = np.linspace(0, 10, 100)
 
-    # Define data ONLY for 'A'. 'B' is omitted to demonstrate the empty placeholder.
+    # Define data; 'B' is omitted to demonstrate the empty placeholder.
     data = {
         'A': {'x': x, 'y': np.sin(x)},
-        'B': {'x': x, 'y': np.cos(x)},
+        # 'B': {'x': x, 'y': np.cos(x)},
+        'C':  {'x': x, 'y': np.cos(x)},
+        'D': {'x': x, 'y': np.sin(x)},
     }
 
     # Define layout: Row 1 has A and B.
-    layout_structure = [['A', 'B']]
+    layout_structure = [['A', 'B'], ['C', 'D']]
 
     print(f"Generating mosaic. Panel A has content. Panel B is empty placeholder.")
     create_mosaic_figure(layout_structure, data)

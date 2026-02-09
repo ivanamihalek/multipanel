@@ -5,11 +5,14 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+from typing import Dict
 
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
 from mplib.io_utils import load_plot_spec, list_xlsx_sheet_names
-from mplib.plotting import build_figure_from_spec, save_figure_svg
+from mplib.plotting import create_mosaic_figure
 from mplib.validate import validate_spec_against_xlsx
 
 
@@ -32,18 +35,35 @@ def apply_style() -> None:
         raise FileNotFoundError(f"Expected matplotlib style file next to script: {style_path}")
 
 
+def get_data() -> Dict[str, pd.DataFrame]:
+    x = np.linspace(0, 10, 100)
+
+    # Define data; 'B' is omitted to demonstrate the empty placeholder.
+    data = {
+        'A': {'x': x, 'y': np.sin(x)},
+        'B': {'x': x, 'y': np.cos(x)},
+        'C':  {'x': x, 'y': np.cos(x)},
+        'D': {'x': x, 'y': np.sin(x)},
+    }
+    dict_of_dataframes = {key: pd.DataFrame(value) for key, value in data.items()}
+    #
+    # spec = load_plot_spec(path=args.yaml)
+    #
+    # xlsx_sheets = list_xlsx_sheet_names(xlsx_path=args.xlsx, )
+    # validate_spec_against_xlsx(spec=spec, xlsx_sheet_names=xlsx_sheets)
+    return dict_of_dataframes
+
 def main() -> None:
 
     args = parse_args()
     apply_style()
 
-    spec = load_plot_spec(path=args.yaml)
+    # Define layout: Row 1 has A and B.
+    layout_structure = [['A', 'A'], ['B', 'B'], ['C', 'D']]
+    data = get_data()
 
-    xlsx_sheets = list_xlsx_sheet_names(xlsx_path=args.xlsx, )
-    validate_spec_against_xlsx(spec=spec, xlsx_sheet_names=xlsx_sheets)
-
-    fig = build_figure_from_spec(xlsx_path=args.xlsx, spec=spec)
-    save_figure_svg(fig=fig, out_path=args.out, )
+    fig = create_mosaic_figure(layout_structure, data)
+    # save_figure_svg(fig=fig, out_path=args.out, )
 
 
 if __name__ == "__main__":

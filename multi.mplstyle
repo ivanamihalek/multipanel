@@ -1,5 +1,5 @@
 # FIGURE SIZE
-figure.figsize : 640, 480
+figure.figsize : 6, 4
 figure.dpi : 150
 savefig.dpi : 200
 figure.constrained_layout : True
@@ -19,16 +19,16 @@ font.family : sans-serif
 svg.fonttype : none
 # Optional: Add other defaults for nicer SVGs/Inkscape compatibility
 font.family : DejaVu Sans
-svg.image_embedding_threshold : 5KB  # Embed small images as SVG (faster load)
+# svg.image_embedding_threshold : 5KB  # Embed small images as SVG (faster load)
 savefig.bbox : tight
-savefig.pad_inches : 0.2
+savefig.pad_inches : 0.1
 
 # FONT SIZES
 font.size : 28
-axes.titlesize : 24
-axes.labelsize : 20
-xtick.labelsize : 16
-ytick.labelsize : 16
+axes.titlesize : 18
+axes.labelsize : 16
+xtick.labelsize : 12
+ytick.labelsize : 12
 legend.fontsize : 14
 
 # LINE PROPERTIES
