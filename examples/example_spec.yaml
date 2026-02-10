@@ -1,9 +1,21 @@
+xlsx_path: examples/example.xlsx
+
 sheet2panel:
-  exp1: i
-  exp2: j
-  exp3: k
+  exp1: I
+  exp2: J
+  exp3: K
 
 layout: |
-  ii00
-  jjkk
-  llll
+  IIJJ
+  KKKK
+  0000
+
+margins:
+  left: 0.05
+  right: 0.02
+  top: 0.05
+  bottom: 0.02
+
+figsize: [7, 5]
+output_svg: examples/example_out.svg
+

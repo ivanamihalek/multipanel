@@ -1,27 +1,20 @@
 # FIGURE SIZE
-figure.figsize : 6, 4
-figure.dpi : 150
-savefig.dpi : 200
-figure.constrained_layout : True
-# Set Spacing (equivalent to gridspec_kw wspace/hspace)
-# Note: When constrained_layout is True, we use these specific keys
-# Values are fractions of the average axes width/height
-figure.constrained_layout.wspace : 0.1
-figure.constrained_layout.hspace : 0.3
-
 figure.facecolor: white
 
-# FONT TYPES
-font.family : sans-serif
-# font.sans-serif :  Arial, DejaVu Sans, Bitstream Vera Sans, sans-serif
+savefig.bbox: tight
+savefig.transparent: False
+savefig.pad_inches : 0.1
+# svg.image_embedding_threshold : 5KB  # Embed small images as SVG (faster load)
 
+
+# FONT TYPES
+# font.sans-serif :  Arial, DejaVu Sans, Bitstream Vera Sans, sans-serif
 # Make sure the text is rendered as <text> rather than <paths>
 svg.fonttype : none
 # Optional: Add other defaults for nicer SVGs/Inkscape compatibility
 font.family : DejaVu Sans
-# svg.image_embedding_threshold : 5KB  # Embed small images as SVG (faster load)
-savefig.bbox : tight
-savefig.pad_inches : 0.1
+
+
 
 # FONT SIZES
 font.size : 28
@@ -30,6 +23,12 @@ axes.labelsize : 16
 xtick.labelsize : 12
 ytick.labelsize : 12
 legend.fontsize : 14
+
+# FIGURE AXES TWEAKS
+axes.facecolor: white
+axes.spines.top: False
+axes.spines.right: False
+
 
 # LINE PROPERTIES
 lines.linewidth : 3
