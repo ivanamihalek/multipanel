@@ -1,4 +1,4 @@
-from __future__ import annotations
+"""Parsing utilities for YAML configuration and sanity checking for Excel data sources"""
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -47,13 +47,13 @@ def _coerce_xlsx_path(raw: Any) -> Path:
 def _coerce_layout_rows(raw: Any) -> list[str]:
     """Allow layout to be provided as a YAML block string or a list of strings."""
     if isinstance(raw, list) and all(isinstance(x, str) for x in raw):
-        rows = [r.rstrip("\n") for r in raw if r.strip() != ""]
+        rows = [r.strip() for r in raw if r.strip() != ""]
         if not rows:
             raise ValueError("layout cannot be empty.")
         return rows
 
     if isinstance(raw, str):
-        rows = [r for r in raw.splitlines() if r.strip() != ""]
+        rows = [r.strip() for r in raw.splitlines() if r.strip() != ""]
         if not rows:
             raise ValueError("layout cannot be empty.")
         return rows
@@ -86,9 +86,9 @@ def _validate_xlsx_sheets_exist(xlsx_path: Path, sheet2panel: dict[str, str]) ->
     if missing:
         raise ValueError(f"These keys in sheet2panel are not sheets in the xlsx file: {missing}")
 
-
-def load_config(yaml_path: Path) -> Config:
+def parse_yaml_config(yaml_path: str|Path) -> Config:
     """Load YAML configuration and perform input checks that don't require figure construction."""
+    if isinstance(yaml_path, str): yaml_path = Path(yaml_path)
     if not yaml_path.exists():
         raise FileNotFoundError(f"Config YAML not found: {yaml_path}")
 
@@ -117,3 +117,5 @@ def load_config(yaml_path: Path) -> Config:
 
     return Config(xlsx_path=xlsx_path, sheet2panel=dict(sheet2panel),
                   layout_rows=layout_rows, margins=margins, figsize=figsize, output_svg=output_svg)
+
+

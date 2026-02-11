@@ -1,80 +1,77 @@
-from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Iterable
+"""Layout engine for calculating label metrics and adjusting panel geometry."""
 
+import sys
+from typing import Dict, List, Tuple
 
-@dataclass(frozen=True)
-class PanelBox:
-    """Inclusive row/col bounds in the layout grid."""
-    r0: int
-    r1: int
-    c0: int
-    c1: int
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 
 
-def layout_shape(layout_rows: list[str]) -> tuple[int, int]:
-    nrows = len(layout_rows)
-    ncols = len(layout_rows[0])
-    if any(len(r) != ncols for r in layout_rows):
-        raise ValueError("All layout rows must have the same length.")
-    return nrows, ncols
+def calculate_max_label_metrics(fig: Figure, labels: List[str], fontsize: int) -> Tuple[float, float]:
+    """Calculate the width/height of the widest/tallest label in Figure coordinates."""
+    renderer = fig.canvas.get_renderer()
+    max_width = 0.0
+    max_height = 0.0
+
+    for label in labels:
+        temp_text = fig.text(0, 0, label, fontsize=fontsize, fontweight='bold')
+        bbox = temp_text.get_window_extent(renderer=renderer)
+        bbox_fig = bbox.transformed(fig.transFigure.inverted())
+        max_width = max(max_width, bbox_fig.width)
+        max_height = max(max_height, bbox_fig.height)
+        temp_text.remove()
+
+    return max_width, max_height
 
 
-def panel_ids_from_layout(layout_rows: list[str]) -> set[str]:
-    return set("".join(layout_rows))
+def adjust_panel_layout(fig: Figure, ax: Axes, label: str, fontsize: int, padding_factor: float,
+                        fixed_label_width: float, fixed_label_height: float) -> None:
+    """Adjust axis position to create a gutter for the panel label."""
+    renderer = fig.canvas.get_renderer()
+    base_pos = ax.get_position()
+    base_x0, base_y0 = base_pos.x0, base_pos.y0
+    base_x1, base_y1 = base_pos.x1, base_pos.y1
 
+    fig_width, fig_height = fig.get_size_inches()
+    padding_inches = (fontsize / 72) * padding_factor
+    x_padding_fig = padding_inches / fig_width
+    y_padding_fig = padding_inches / fig_height
 
-def compute_panel_boxes(layout_rows: list[str]) -> dict[str, PanelBox]:
-    """
-    Compute bounding rectangles for each panel ID and ensure each panel is a filled rectangle
-    (mosaic-like constraint).
-    """
-    nrows, ncols = layout_shape(layout_rows)
-    ids = panel_ids_from_layout(layout_rows)
+    ylabel = ax.yaxis.label
+    ylabel_bbox = ylabel.get_window_extent(renderer=renderer)
+    ylabel_bbox_fig = ylabel_bbox.transformed(fig.transFigure.inverted())
+    ylabel_width = ylabel_bbox_fig.width if ylabel.get_text() else 0.0
 
-    positions: dict[str, list[tuple[int, int]]] = {pid: [] for pid in ids}
-    for r in range(nrows):
-        for c in range(ncols):
-            positions[layout_rows[r][c]].append((r, c))
+    max_tick_width = 0.0
+    for tl in ax.get_yticklabels():
+        if tl.get_text():
+            tl_bbox = tl.get_window_extent(renderer=renderer)
+            tl_bbox_fig = tl_bbox.transformed(fig.transFigure.inverted())
+            max_tick_width = max(max_tick_width, tl_bbox_fig.width)
 
-    boxes: dict[str, PanelBox] = {}
-    for pid, pos in positions.items():
-        rs = [p[0] for p in pos]
-        cs = [p[1] for p in pos]
-        r0, r1 = min(rs), max(rs)
-        c0, c1 = min(cs), max(cs)
+    title = ax.title
+    title_bbox = title.get_window_extent(renderer=renderer)
+    title_bbox_fig = title_bbox.transformed(fig.transFigure.inverted())
+    title_height = title_bbox_fig.height if title.get_text() else 0.0
 
-        # Ensure panel occupies a full rectangle (no holes, no discontiguous shapes).
-        for rr in range(r0, r1 + 1):
-            for cc in range(c0, c1 + 1):
-                if layout_rows[rr][cc] != pid:
-                    raise ValueError(f"Panel '{pid}' is not a solid rectangle in layout (hole/discontiguity at {rr},{cc}).")
+    gap = x_padding_fig / 2.0
+    required_left_inset = (x_padding_fig + fixed_label_width + gap + ylabel_width + gap + max_tick_width + gap)
+    required_top_inset = (y_padding_fig + fixed_label_height + y_padding_fig + title_height)
 
-        boxes[pid] = PanelBox(r0=r0, r1=r1, c0=c0, c1=c1)
+    new_left = base_x0 + required_left_inset
+    new_top = base_y1 - required_top_inset
+    new_width = base_x1 - new_left
+    new_height = new_top - base_y0
 
-    return boxes
+    if new_width <= 0 or new_height <= 0:
+        print(f"Warning: Panel {label} is too small for the requested font/layout.", file=sys.stderr)
+        return
 
+    ax.set_position([new_left, base_y0, new_width, new_height])
 
-def validate_panel_ids(layout_rows: list[str], sheet2panel: dict[str, str]) -> tuple[set[str], set[str], set[str]]:
-    """
-    Returns (layout_ids, mapped_ids, unmapped_layout_ids).
+    final_x = base_x0 + x_padding_fig
+    final_y = base_y1 - y_padding_fig - fixed_label_height
 
-    Rules:
-    - If mapped_ids contains IDs not in layout_ids => error (handled by caller).
-    - If layout has extra IDs not in mapped_ids (except '0') => warning + placeholders.
-    """
-    layout_ids = panel_ids_from_layout(layout_rows)
-    mapped_ids = set(sheet2panel.values())
-    unmapped_layout_ids = {pid for pid in layout_ids if pid not in mapped_ids and pid != "0"}
-    return layout_ids, mapped_ids, unmapped_layout_ids
-
-
-def iter_unique_panels_in_layout(layout_rows: list[str]) -> Iterable[str]:
-    """Deterministic order: first appearance scan."""
-    seen: set[str] = set()
-    for row in layout_rows:
-        for ch in row:
-            if ch not in seen:
-                seen.add(ch)
-                yield ch
+    fig.text(final_x, final_y, label, fontsize=fontsize, fontweight='bold', ha='left', va='bottom',
+             transform=fig.transFigure)

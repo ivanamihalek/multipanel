@@ -1,0 +1,12 @@
+xlsx_path:
+  examples/example_data.xlsx
+
+sheet2panel:
+  timeseries: I
+  exp2: J
+  exp3: K
+
+layout:
+  AABB
+  CCBB
+  DDDE

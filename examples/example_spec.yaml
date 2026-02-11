@@ -1,21 +1,18 @@
-xlsx_path: examples/example.xlsx
+xlsx_path:
+  examples/example_data.xlsx
+
 
 sheet2panel:
-  exp1: I
-  exp2: J
-  exp3: K
+  timeseries_a :  A
+  scatter_b :  B
+  distribution_c : C
+  intensity_d : D
+  timeseries_e : E
+  scatter_f : F
 
+# The pipe symbol at the end of a line in YAML signifies that any indented text that follows
+# should be interpreted as a multi-line scalar value
 layout: |
-  IIJJ
-  KKKK
-  0000
-
-margins:
-  left: 0.05
-  right: 0.02
-  top: 0.05
-  bottom: 0.02
-
-figsize: [7, 5]
-output_svg: examples/example_out.svg
-
+  AABB
+  CCBB
+  DEEE
