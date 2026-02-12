@@ -25,8 +25,8 @@ def calculate_max_label_metrics(fig: Figure, labels: List[str], fontsize: int) -
     return max_width, max_height
 
 
-def adjust_panel_layout(fig: Figure, ax: Axes, label: str, fontsize: int, padding_factor: float,
-                        fixed_label_width: float, fixed_label_height: float) -> None:
+def add_panel_label(fig: Figure, ax: Axes, label: str, fontsize: int, padding_factor: float,
+                    fixed_label_width: float, fixed_label_height: float) -> None:
     """Adjust axis position to create a gutter for the panel label."""
     renderer = fig.canvas.get_renderer()
     base_pos = ax.get_position()
@@ -68,7 +68,7 @@ def adjust_panel_layout(fig: Figure, ax: Axes, label: str, fontsize: int, paddin
         print(f"Warning: Panel {label} is too small for the requested font/layout.", file=sys.stderr)
         return
 
-    ax.set_position([new_left, base_y0, new_width, new_height])
+    ax.set_position((new_left, base_y0, new_width, new_height))
 
     final_x = base_x0 + x_padding_fig
     final_y = base_y1 - y_padding_fig - fixed_label_height

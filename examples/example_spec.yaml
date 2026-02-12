@@ -1,6 +1,5 @@
 xlsx_path:
-  examples/example_data.xlsx
-
+  examples/exmpl_w_barplot.xlsx
 
 sheet2panel:
   timeseries_a :  A
@@ -9,10 +8,12 @@ sheet2panel:
   intensity_d : D
   timeseries_e : E
   scatter_f : F
+  barplot_g : G
 
 # The pipe symbol at the end of a line in YAML signifies that any indented text that follows
 # should be interpreted as a multi-line scalar value
 layout: |
-  AABB
-  CCBB
+  A0BB
+  GGBB
   DEEE
+  

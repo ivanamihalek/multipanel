@@ -11,8 +11,9 @@ from typing import Dict, Tuple, Any
 
 from mplib.yaml_parser import parse_yaml_config, Config
 from mplib.xlsx_parser import parse_xlsx_data
-from mplib.layout import calculate_max_label_metrics, adjust_panel_layout
-from mplib.plotting import plot_panel_content, plot_dummy_fallback
+from mplib.layout import calculate_max_label_metrics, add_panel_label
+from mplib.plotting import plot_panel_content, plot_dummy_fallback, plot_legend
+
 
 def _style_path_for_script() -> Path:
     """Return path to multi.mplstyle located next to this script."""
@@ -27,7 +28,6 @@ def main() -> None:
     args = parser.parse_args()
 
     plt.style.use(str(_style_path_for_script() ))
-
 
     # 1. Load Configuration
     config: Config = parse_yaml_config(args.config)
@@ -48,6 +48,8 @@ def main() -> None:
         if panel_label in panel_data:
             df, plot_type = panel_data[panel_label]
             plot_panel_content(ax, df, plot_type, panel_label)
+        elif panel_label=='0':
+            plot_legend(ax)
         else:
             plot_dummy_fallback(ax, panel_label)
 
@@ -61,8 +63,9 @@ def main() -> None:
 
     # 7. Adjust Layout and Place Labels
     for label, ax in sorted(axd.items()):
-        adjust_panel_layout(fig, ax, label, fontsize=args.fontsize, padding_factor=args.padding,
-                            fixed_label_width=max_w, fixed_label_height=max_h)
+        if label=='0': continue # reserved label for the legend space
+        add_panel_label(fig, ax, label, fontsize=args.fontsize, padding_factor=args.padding,
+                        fixed_label_width=max_w, fixed_label_height=max_h)
 
     # 8. Save Output
     plt.savefig(args.output, dpi=100)

@@ -19,9 +19,9 @@ font.family : DejaVu Sans
 # FONT SIZES
 font.size : 28
 axes.titlesize : 18
-axes.labelsize : 16
-xtick.labelsize : 12
-ytick.labelsize : 12
+axes.labelsize : 24
+xtick.labelsize : 16
+ytick.labelsize : 16
 legend.fontsize : 14
 
 # FIGURE AXES TWEAKS
