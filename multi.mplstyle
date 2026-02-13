@@ -14,8 +14,6 @@ svg.fonttype : none
 # Optional: Add other defaults for nicer SVGs/Inkscape compatibility
 font.family : DejaVu Sans
 
-
-
 # FONT SIZES
 font.size : 28
 axes.titlesize : 18
