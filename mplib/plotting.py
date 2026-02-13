@@ -2,11 +2,12 @@
 """Plotting utilities for populating mosaic panels with data."""
 import numpy as np
 import pandas as pd
+from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 from typing import Callable, Dict
 from .bar_w_stats import bar_plot_w_stats  # Add import at top of file
 
-def _plot_line(ax: Axes, df: pd.DataFrame, panel_label: str) -> None:
+def _plot_line(fig: Figure, ax: Axes, df: pd.DataFrame, panel_label: str) -> None:
     """Render line plot."""
     x, y = (df.iloc[:, 0], df.iloc[:, 1]) if df.shape[1] >= 2 else (np.arange(len(df)), df.iloc[:, 0])
     ax.plot(x, y)
@@ -15,7 +16,7 @@ def _plot_line(ax: Axes, df: pd.DataFrame, panel_label: str) -> None:
     ax.grid(False, alpha=0.3)
 
 
-def _plot_scatter(ax: Axes, df: pd.DataFrame, panel_label: str) -> None:
+def _plot_scatter(fig: Figure, ax: Axes, df: pd.DataFrame, panel_label: str) -> None:
     """Render scatter plot."""
     x, y = (df.iloc[:, 0], df.iloc[:, 1]) if df.shape[1] >= 2 else (np.arange(len(df)), df.iloc[:, 0])
     ax.scatter(x, y, alpha=0.6, c='darkblue')
@@ -24,7 +25,7 @@ def _plot_scatter(ax: Axes, df: pd.DataFrame, panel_label: str) -> None:
     ax.grid(False, alpha=0.3)
 
 
-def _plot_histogram(ax: Axes, df: pd.DataFrame, panel_label: str) -> None:
+def _plot_histogram(fig: Figure, ax: Axes, df: pd.DataFrame, panel_label: str) -> None:
     """Render histogram."""
     data = df.iloc[:, 0].dropna()
     ax.hist(data, bins=20, alpha=0.7, color='purple')
@@ -33,17 +34,17 @@ def _plot_histogram(ax: Axes, df: pd.DataFrame, panel_label: str) -> None:
     ax.grid(False, alpha=0.3)
 
 
-def _plot_heatmap(ax: Axes, df: pd.DataFrame, panel_label: str) -> None:
+def _plot_heatmap(fig: Figure, ax: Axes, df: pd.DataFrame, panel_label: str) -> None:
     """Render heatmap."""
     # TODO - y-label overlpa the gutter, assorted AIs (Feb 2026) cannot find the fix
     ax.imshow(df.values, cmap='viridis', aspect='auto')
     ax.set_ylabel("Y-Index")
 
-def _plot_bar(ax: Axes, df: pd.DataFrame,  panel_label: str):
-    bar_plot_w_stats(ax, df, panel_label)
+def _plot_bar(fig: Figure, ax: Axes, df: pd.DataFrame,  panel_label: str):
+    bar_plot_w_stats(fig, ax, df, panel_label)
 
 # Factory mapping
-plot_factory: Dict[str, Callable[[Axes, pd.DataFrame, str], None]] = {
+plot_factory: Dict[str, Callable[[Figure, Axes, pd.DataFrame, str], None]] = {
     'line': _plot_line,
     'scatter': _plot_scatter,
     'histogram': _plot_histogram,
@@ -52,7 +53,7 @@ plot_factory: Dict[str, Callable[[Axes, pd.DataFrame, str], None]] = {
 }
 
 
-def plot_panel_content(ax: Axes, df: pd.DataFrame, plot_type: str, panel_label: str) -> None:
+def plot_panel_content(fig,  ax: Axes, df: pd.DataFrame, plot_type: str, panel_label: str) -> None:
     """Render plot content into a specific axis based on data type."""
 
     plot_func = plot_factory.get(plot_type)

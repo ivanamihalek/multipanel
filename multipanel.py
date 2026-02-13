@@ -47,7 +47,7 @@ def main() -> None:
     for panel_label, ax in axd.items():
         if panel_label in panel_data:
             df, plot_type = panel_data[panel_label]
-            plot_panel_content(ax, df, plot_type, panel_label)
+            plot_panel_content(fig, ax, df, plot_type, panel_label)
         elif panel_label=='0':
             plot_legend(ax)
         else:

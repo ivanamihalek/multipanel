@@ -4,6 +4,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 from matplotlib import  rcParams
 from scipy import stats
@@ -184,23 +185,25 @@ def _add_data_points(ax: plt.Axes, df: pd.DataFrame, attribute: str,
                      groups: np.ndarray, leading_column: str,
                      x_positions: np.ndarray, bar_width: float,
                      bar_color: str) -> None:
+
     """Add jittered data points to the plot."""
     for j, group in enumerate(groups):
         # Filter rows for the current group
         group_data = df[df[leading_column] == group]
 
+        if attribute not in group_data: continue
         # Extract values for the current attribute (column)
-        if attribute in group_data.columns:
-            values = group_data[attribute].dropna().values
 
-            if len(values) > 0:
-                # Add jitter to x positions
-                jitter = np.random.uniform(-bar_width * 0.3, bar_width * 0.3, len(values))
-                x_jittered = x_positions[j] + jitter
+        values = group_data[attribute].dropna().values
+        if len(values) == 0: continue
 
-                point_color = get_complementary_color(bar_color)
-                ax.scatter(x_jittered, values, color=point_color, edgecolor="black",
-                           linewidth=0.25, s=30, alpha=0.8, zorder=3)
+        # Add jitter to x positions
+        jitter = np.random.uniform(-bar_width * 0.3, bar_width * 0.3, len(values))
+        x_jittered = x_positions[j] + jitter
+
+        point_color = get_complementary_color(bar_color)
+        ax.scatter(x_jittered, values, color=point_color, edgecolor="black",
+                   linewidth=0.25, s=30, alpha=0.8, zorder=3)
 
 
 def _add_significance_annotations(ax: plt.Axes, stat_results: pd.DataFrame,
@@ -238,8 +241,7 @@ def _add_significance_annotations(ax: plt.Axes, stat_results: pd.DataFrame,
         group = row[leading_column]
         group_idx = np.where(groups == group)[0]
 
-        if len(group_idx) == 0:
-            continue
+        if len(group_idx) == 0:  continue
 
         group_idx = group_idx[0]
 
@@ -247,8 +249,7 @@ def _add_significance_annotations(ax: plt.Axes, stat_results: pd.DataFrame,
         attr1_idx = np.where(attributes == row["group1"])[0]
         attr2_idx = np.where(attributes == row["group2"])[0]
 
-        if len(attr1_idx) == 0 or len(attr2_idx) == 0:
-            continue
+        if len(attr1_idx) == 0 or len(attr2_idx) == 0: continue
 
         n_attributes = len(attributes)
         x1 = group_positions[group_idx] + (attr1_idx[0] - n_attributes / 2 + 0.5) * bar_width
@@ -322,7 +323,6 @@ def _configure_axes(ax: plt.Axes, groups: np.ndarray, attributes: np.ndarray,
     label_y = top_y_annotation if top_y_annotation is not None else current_top
 
     # Add some padding
-    # Estimate padding same way as other elements or just a fixed factor
     # y_range approximation
     y_min, y_max = ax.get_ylim()
     y_range = y_max - y_min
@@ -346,13 +346,14 @@ def _configure_axes(ax: plt.Axes, groups: np.ndarray, attributes: np.ndarray,
     ax.tick_params(axis='x',  which='both', bottom=False, top=False, labelbottom=False)
 
 
-def create_grouped_bar_plot(ax: Axes, df: pd.DataFrame, summary_df: pd.DataFrame,
+def create_grouped_bar_plot(fig: Figure, ax: Axes, df: pd.DataFrame, summary_df: pd.DataFrame,
                             stat_results: pd.DataFrame,
                             y_label: str,  show_points: bool = True) -> None:
     """
     Create a grouped bar plot with error bars and significance annotations.
 
     Args:
+        fig: the main figure object - needed for redrawing and measurement
         ax: (subplot) axes
         df: Wide-format data used for plotting points
         summary_df: Summary statistics
@@ -361,7 +362,7 @@ def create_grouped_bar_plot(ax: Axes, df: pd.DataFrame, summary_df: pd.DataFrame
         show_points: Whether to show individual data points
 
     Returns:
-        Matplotlib Figure object
+        None
     """
     # Get unique groups and attributes
     leading_column = df.columns[0]
@@ -423,7 +424,7 @@ def create_grouped_bar_plot(ax: Axes, df: pd.DataFrame, summary_df: pd.DataFrame
     _configure_axes(ax, groups, attributes, y_label, bar_width, top_y_annotation=top_y)
 
 
-def bar_plot_w_stats(ax: Axes, df: pd.DataFrame, panel_label: str) -> None:
+def bar_plot_w_stats(fig: Figure, ax: Axes, df: pd.DataFrame, panel_label: str) -> None:
 
     leading_column_name = df.columns[0]
 
