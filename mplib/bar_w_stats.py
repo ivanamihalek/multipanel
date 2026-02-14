@@ -296,7 +296,7 @@ def _add_significance_annotations(ax: plt.Axes, stat_results: pd.DataFrame,
 
 def get_color_for_attribute(attribute: str) -> str:
     """
-    Get the color associated with a attribute.
+    Get the color associated with an attribute.
 
     Args:
         attribute: attribute name
