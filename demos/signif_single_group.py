@@ -1,10 +1,13 @@
 #! /usr/bin/env python3
 from dataclasses import dataclass
+from typing import Tuple
 
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import numpy as np
 from pathlib import Path
 from itertools import combinations
+from matplotlib.font_manager import FontProperties
 
 def generate_test_values(number_of_avgs):
     np.random.seed(42)
@@ -35,8 +38,53 @@ class AsteriskBarDimensions:
     asterisk_height_in_data_units: float
     tip_length_in_data_units: float
     dash_width_in_data_units: float
+    top_y_in_data_units: float
 
-def asterisk_bar_geometry(fig: plt.Figure, ax: plt.Axes, list_of_heights) -> AsteriskBarDimensions:
+
+
+def get_axis_to_font_ratio(fig: plt.Figure, ax: plt.Axes) -> Tuple[float, float, float, float]:
+    """
+    Compute the ratio of axis dimensions (width, height) in pixels
+    to the dimensions of the y-axis tick label font (in pixels).
+
+    Returns:
+        dict with ratios and intermediate measurements
+    """
+
+    # ----------------------------------------------------------
+    # STEP 1: Get the axis bounding box in display (pixel) units
+    # ----------------------------------------------------------
+    # We must call draw() first so that all layout info is resolved
+    fig.canvas.draw()
+
+    bbox = ax.get_window_extent()          # in display pixels
+    ax_width_px  = bbox.width
+    ax_height_px = bbox.height
+
+    # ----------------------------------------------------------
+    # STEP 2: Get the y-axis tick label font size in *points*
+    # ----------------------------------------------------------
+    # Font size in points (pt) is a measurement of the total vertical height of the font's bounding box
+    # —originally the metal body, now the "em square"
+    ytick_labels = ax.get_yticklabels()
+    if ytick_labels:
+        font_size_pt = ytick_labels[0].get_fontsize()   # in points
+    else:
+        font_size_pt = mpl.rcParams['ytick.labelsize']
+        if isinstance(font_size_pt, str):                # e.g. 'medium'
+            font_size_pt = mpl.font_manager.font_scalings.get(
+                font_size_pt, 1.0) * mpl.rcParams['font.size']
+
+    # ----------------------------------------------------------
+    # STEP 3: Convert font size from points → pixels
+    # ----------------------------------------------------------
+    dpi = fig.dpi
+    font_height_px = font_size_pt * dpi / 72.0   # 1 point = 1/72 inch
+
+    return font_size_pt, font_height_px, ax_width_px  / font_height_px,  ax_height_px / font_height_px
+
+
+def asterisk_bar_geometry(fig: plt.Figure, ax: plt.Axes,  sig_pairs) -> AsteriskBarDimensions:
     # Get figure dimensions
     # Points are absolute, print-based units (1/72th of an inch)
     # number of pixels per point depends on the device resolution
@@ -47,48 +95,35 @@ def asterisk_bar_geometry(fig: plt.Figure, ax: plt.Axes, list_of_heights) -> Ast
     # don't touch the numbers hardcoded here - they
     # accomplish what is needed visually
     # Get y-axis tick label font size in points
-    y_tick_labels = ax.get_yticklabels()
-    if y_tick_labels:
-        tick_fontsize = y_tick_labels[0].get_fontsize()
-    else:
-        tick_fontsize = plt.rcParams.get('ytick.labelsize', plt.rcParams.get('font.size', 10))
-        #
-        if isinstance(tick_fontsize, str): # TODO what do string descriptions of the font size correspond to?
-            tick_fontsize = 10
 
+    # 'fu' means font units (font height)
+    font_size_pt, font_height_px, ax_width_fu, ax_height_fu = get_axis_to_font_ratio(fig, ax)
 
-    # Create invisible text so matplotlib can measure it
-    t = ax.text(0, 0, "A", fontsize=tick_fontsize, alpha=0)
-    # Need to draw, to figure out what are our units in terms of what is plotted on the y axis (data coordinates)
-    fig.canvas.draw()
-    # Get text bounding box in display (pixel) coordinates
-    bbox = t.get_window_extent()
-    # we do not need the sacrificial text any more
-    t.remove()
+    # for each sig pair we want to show the asterisk bar
+    # let's say for now it will be 2 font units high
+    n_sig_pairs = len(sig_pairs)
 
-    # Height in pixels
-    font_height_pixels = bbox.height
-    font_width_pixels = bbox.width
-    # Convert pixel height and width to data units
-    inv = ax.transData.inverted()
-    p1 = inv.transform((0, 0))
-    p2 = inv.transform((font_width_pixels, font_height_pixels))
-    font_height_in_data_units = float(p2[1] - p1[1])
-    font_width_in_data_units = float(p2[0] - p1[0])
+    # y in data units
+    y_limits_current = ax.get_ylim() # \The current y-axis limits in data coordinates.
+    y_range_current = y_limits_current[1] - y_limits_current[0]
+    y_range_new = y_range_current*(ax_height_fu/(ax_height_fu - n_sig_pairs*2*font_height_px))
+    top_y_in_data_units = y_limits_current[0] + y_range_new
 
+    font_height_in_data_units = (y_range_new - y_range_current)/(n_sig_pairs*2)
     # prong, or teine or tip at the end of asterisk bar
     tip_length_in_data_units = font_height_in_data_units / 3
-    # Asterisk font size is 1.2 of tick label font size (in points)
-    asterisk_fontsize = tick_fontsize * 1.2
+
     # the glyph itself is 1/3 of the fontsize
     asterisk_height_in_data_units = font_height_in_data_units * 1.2 / 3
-    dash_width_in_data_units = 2 * font_width_in_data_units
+    x_limits_current = ax.get_xlim()
+    dash_width_in_data_units = (x_limits_current[1] - x_limits_current[0]) / 20
 
 
-    geom = AsteriskBarDimensions(asterisk_fontsize=asterisk_fontsize,
+    geom = AsteriskBarDimensions(asterisk_fontsize= font_size_pt,
                                  asterisk_height_in_data_units=asterisk_height_in_data_units,
                                  tip_length_in_data_units=tip_length_in_data_units,
-                                 dash_width_in_data_units=dash_width_in_data_units)
+                                 dash_width_in_data_units=dash_width_in_data_units,
+                                 top_y_in_data_units=top_y_in_data_units)
 
     return geom
 
@@ -109,12 +144,14 @@ def draw_asterisk_bars(fig: plt.Figure, ax: plt.Axes, list_of_heights, p_values)
     # Sort pairs by their span (distance between bars) to layer them properly
     sorted_pairs = sorted(p_values.keys(), key=lambda pair: abs(pair[1] - pair[0]))
 
-    g: AsteriskBarDimensions = asterisk_bar_geometry(fig, ax, list_of_heights, p_values)
+    g: AsteriskBarDimensions = asterisk_bar_geometry(fig, ax, p_values)
 
     n_bars = len(list_of_heights)
     x_positions = np.arange(n_bars)
 
-    top_y = 0
+    max_height = max(list_of_heights)
+    lowest_asterisk_line_y = max_height + g.tip_length_in_data_units
+
     for pair_idx, (i, j) in enumerate(sorted_pairs):
 
         p_value = p_values[(i, j)]
@@ -122,8 +159,8 @@ def draw_asterisk_bars(fig: plt.Figure, ax: plt.Axes, list_of_heights, p_values)
 
         # Determine the height for this annotation
         # It should be above the tallest element in the span
-        span_max_height = max(max_heights[min(i, j):max(i, j) + 1])
-        y_line = span_max_height + level_spacing
+
+        y_line = lowest_asterisk_line_y + pair_idx * 2 * g.asterisk_height_in_data_units
 
         x1, x2 = x_positions[i], x_positions[j]
 
@@ -132,17 +169,17 @@ def draw_asterisk_bars(fig: plt.Figure, ax: plt.Axes, list_of_heights, p_values)
 
         # Draw vertical lines at ends (1/2 the height of asterisk)
         for x in [x1, x2]:
-            ax.plot([x, x], [y_line, y_line - g.tip_length], color='black', linewidth=1)
+            ax.plot([x, x], [y_line, y_line - g.tip_length_in_data_units], color='black', linewidth=1)
 
         # Add significance symbol
         x_mid = (x1 + x2) / 2
-        y_text = y_line  - g.asterisk_height_inches * 0.5  # Small offset above the line
+        y_text = y_line  - g.asterisk_height_in_data_units * 0.5  # Small offset above the line
 
         if sig_symbol == "-":
             # Position: 1/3 of asterisk height above the horizontal significance line
-            dash_y = y_line +  g.asterisk_height_inches * 0.5
+            dash_y = y_line +  g.asterisk_height_in_data_units * 0.5
             # Draw the dash line
-            ax.plot([x_mid - g.dash_physical_width/2, x_mid + g.dash_physical_width/2],   [dash_y, dash_y],
+            ax.plot([x_mid - g.dash_width_in_data_units/2, x_mid + g.dash_width_in_data_units/2],  [dash_y, dash_y],
                    color='black', linewidth=2, solid_capstyle='butt')
         else:
             ax.text(x_mid, y_text, sig_symbol, ha='center', va='bottom', fontsize=g.asterisk_fontsize)
@@ -150,7 +187,7 @@ def draw_asterisk_bars(fig: plt.Figure, ax: plt.Axes, list_of_heights, p_values)
 
     # Adjust y-axis limit to accommodate annotations
     current_ylim = ax.get_ylim()
-    ax.set_ylim(current_ylim[0],top_y)
+    ax.set_ylim(current_ylim[0], g.top_y_in_data_units)
 
 
 def barplot_w_sig_annotation(fig: plt.Figure, ax: plt.Axes, list_of_avgs, p_values):
